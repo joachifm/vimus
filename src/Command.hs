@@ -670,13 +670,10 @@ volume :: Volume -> Vimus ()
 volume (Volume v)       = MPD.setVolume v
 volume (VolumeOffset i) = do
     current <- (fromIntegral . MPD.stVolume) <$> MPD.status
-    -- current + new = 100 if current + new > 100
-    -- current - new = 0   if current - new < 100
-    let new  = current + i
-        new' | new > 100 = 100
-             | new < 0   = 0
-             | otherwise = new
-    MPD.setVolume new'
+    MPD.setVolume $ adjust (current + i)
+    where adjust v | v > 100   = 100
+                   | v < 0     = 0
+                   | otherwise = v
 
 ------------------------------------------------------------------------
 -- search
