@@ -665,12 +665,18 @@ readVolume s = case s of
           volumeValue x = maybeRead x >>= inRange 0 100
           inRange l h x = guard (l <= x && x <= h) >> return x
 
--- | Set or increment volume.
---
--- TODO: handle cases where offset exceeds current volume.
+-- | Set volume, or increment it by fixed amount.
 volume :: Volume -> Vimus ()
 volume (Volume v)       = MPD.setVolume v
-volume (VolumeOffset v) = MPDE.volume v
+volume (VolumeOffset i) = do
+    current <- (fromIntegral . MPD.stVolume) <$> MPD.status
+    -- current + new = 100 if current + new > 100
+    -- current - new = 0   if current - new < 100
+    let new  = current + i
+        new' | new > 100 = 100
+             | new < 0   = 0
+             | otherwise = new
+    MPD.setVolume new'
 
 ------------------------------------------------------------------------
 -- search
