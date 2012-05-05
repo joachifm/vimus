@@ -16,7 +16,7 @@ module Command (
 
 import           Data.List
 import           Data.Char
-import           Control.Monad (void, when, unless)
+import           Control.Monad (void, when, unless, guard)
 import           Control.Applicative
 import           Data.Foldable (forM_)
 import           Text.Printf (printf)
@@ -278,6 +278,9 @@ commands = [
 
   , command "nosingle" "" $ do
       MPD.single  False :: Vimus ()
+
+  , command "volume" "[+-]<num> set volume to <num> or adjust by [+-] num" $ do
+      volume :: Volume -> Vimus ()
 
   , command "toggle-repeat" "toggles the *repeat* option" $ do
       MPD.status >>= MPD.repeat  . not . MPD.stRepeat :: Vimus ()
@@ -628,6 +631,46 @@ songDefaultAction song = case MPD.sgId song of
   -- song is not yet on the playlist
   Nothing -> MPD.addId (MPD.sgFilePath song) Nothing >>= MPD.playId
 
+-- | Volume argument for the 'volume' command.
+data Volume = Volume Int
+            -- ^ Exact volume value, 0-100.
+            | VolumeOffset Int
+            -- ^ Offset from current volume.
+              deriving Show
+
+instance Argument Volume where
+    argumentName = const $ "volume"
+    argumentParser = parseVolume
+
+parseVolume :: Parser Volume
+parseVolume = do
+    r <- takeWhile1 (not . isSpace) <|> missingArgument proxy
+    maybe (invalidArgument proxy r)
+          return
+          (readVolume r)
+    where proxy = undefined :: Volume
+
+-- @readVolume "10"   == Just (Volume 10)@
+-- @readVolume "-10"  == Just (VolumeOffset (-10))@
+-- @readVolume "+10"  == Just (VolumeOffset 10)@
+-- @readVolume "+"    == Nothing@
+-- @readVolume "110"  == Nothing@
+-- @readVolume "+110" == Nothing@
+readVolume :: String -> Maybe Volume
+readVolume s = case s of
+    ('+':n) -> VolumeOffset <$> offsetValue n
+    ('-':_) -> VolumeOffset <$> offsetValue s
+    _       -> Volume <$> volumeValue s
+    where offsetValue x = maybeRead x >>= inRange (-100) 100
+          volumeValue x = maybeRead x >>= inRange 0 100
+          inRange l h x = guard (l <= x && x <= h) >> return x
+
+-- | Set or increment volume.
+--
+-- TODO: handle cases where offset exceeds current volume.
+volume :: Volume -> Vimus ()
+volume (Volume v)       = MPD.setVolume v
+volume (VolumeOffset v) = MPDE.volume v
 
 ------------------------------------------------------------------------
 -- search
