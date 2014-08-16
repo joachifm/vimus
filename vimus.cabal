@@ -30,8 +30,8 @@ executable vimus
       base        >= 4.6
     , ncursesw    == 0.0.0
     , wcwidth
-    , libmpd      == 0.9.*
-    , mtl         >= 2
+    , mpd
+    , mtl         >= 2 && < 2.2
     , containers  >= 0.4 && < 0.6
     , deepseq
     , time
@@ -101,8 +101,8 @@ test-suite spec
       base        >= 4.6
     , ncursesw    == 0.0.0
     , wcwidth
-    , libmpd      == 0.9.*
-    , mtl         >= 2
+    , mpd
+    , mtl         >= 2 && < 2.2
     , containers
     , deepseq
     , time

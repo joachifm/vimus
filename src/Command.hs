@@ -37,10 +37,7 @@ import           Data.Time.Clock.POSIX
 import           Control.Monad.State.Strict (gets, liftIO)
 import           Control.Monad.Error (catchError)
 
-import           Network.MPD ((=?))
-import qualified Network.MPD as MPD hiding (withMPD)
-import qualified Network.MPD.Commands.Extensions as MPDE
-import qualified Network.MPD.Applicative as MPDA
+import qualified MPD
 
 import           UI.Curses hiding (wgetch, ungetch, mvaddstr, err)
 
@@ -80,9 +77,9 @@ tabs = Tab.fromList [
     tab n t = Tab n (AnyWidget . t $ ListWidget.new []) Persistent
 
 data PlaylistWidget = PlaylistWidget {
-  plMarked     :: MPD.Song -> Bool
+  plMarked     :: MPD.SongInfo -> Bool
 , plLastAction :: POSIXTime
-, plSongs      :: ListWidget SongFormat MPD.Song
+, plSongs      :: ListWidget SongFormat MPD.SongInfo
 }
 
 instance Widget PlaylistWidget where
@@ -195,7 +192,7 @@ instance Widget PlaylistWidget where
         EvPastePrevious      {} -> currentTime
         EvChangeSongFormat   {} -> currentTime
 
-newtype LibraryWidget = LibraryWidget (ListWidget SongFormat MPD.Song)
+newtype LibraryWidget = LibraryWidget (ListWidget SongFormat MPD.SongInfo)
 
 instance Widget LibraryWidget where
   render (LibraryWidget w)         = render w
@@ -227,10 +224,10 @@ instance Widget LibraryWidget where
           (mpdCommand, vimusAction) = action l
 
       consSong x xs = case x of
-        MPD.LsSong song -> song : xs
-        _               ->        xs
+        MPD.LsSongInfo song -> song : xs
+        _                   ->        xs
 
-type SongList = ListWidget SongFormat MPD.Song
+type SongList = ListWidget SongFormat MPD.SongInfo
 
 -- |
 -- This consists of an MPD command and a Vimus action.  The MPD command is run
@@ -256,7 +253,7 @@ insertAction pos l = (
   where
     songs = map MPD.sgFilePath $ ListWidget.selected l
 
-songListHandler :: ListWidget SongFormat MPD.Song -> Event -> Vimus (ListWidget SongFormat MPD.Song)
+songListHandler :: ListWidget SongFormat MPD.SongInfo -> Event -> Vimus (ListWidget SongFormat MPD.SongInfo)
 songListHandler l ev = case ev of
   EvMoveAlbumNext -> do
     case ListWidget.select l of
