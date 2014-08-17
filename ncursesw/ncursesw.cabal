@@ -20,6 +20,9 @@ library
 
   build-tools:
       c2hs
+    , cpphs
+
+  c2hs-options: --cpp=cpphs
 
   extra-libraries:
     ncursesw
