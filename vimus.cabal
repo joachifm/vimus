@@ -41,7 +41,7 @@ library
     , bytestring
     , utf8-string
     , wcwidth
-    , libmpd == 0.9.*
+    , libmpd == 0.10.*
     , mtl >= 2
     , containers >= 0.4 && < 0.6
     , deepseq
