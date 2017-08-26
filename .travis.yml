@@ -35,13 +35,13 @@ install:
     set -e
     travis_retry cabal update
     travis_retry cabal install c2hs
-    cabal install --only-dependencies --enable-tests --enable-benchmarks $CABALARGS
+    cabal install --only-dependencies --enable-tests --enable-benchmarks --ghc-options=-O0 --reorder-goals --max-backjumps=-1 $CABALARGS
     set +e
 
 script:
   - |
     set -e
-    cabal configure --force-reinstalls --enable-tests --enable-benchmarks -v2 $CABALARGS
+    cabal configure --force-reinstalls --enable-tests --enable-benchmarks --ghc-options=-O0 --reorder-goals --max-backjumps=-1 -v2 $CABALARGS
     cabal check
     cabal test
     cabal sdist
