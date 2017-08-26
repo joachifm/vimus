@@ -29,6 +29,14 @@ before_install:
   - CABALARGS=""
   - if [ "x$GHCVER" = "xhead" ] ; then CABALARGS=--allow-newer ; fi
   - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:/opt/happy/$HAPPYVER/bin:/opt/alex/$ALEXVER/bin:$HOME/.cabal/bin:$PATH
+  - |
+    mkdir $HOME/.cabal
+    echo 'remote-repo: hackage.haskell.org:http://hackage.fpcomplete.com/' > $HOME/.cab>
+    echo 'remote-repo-cache: $HOME/.cabal/packages' >> $HOME/.cabal/config
+    if [ "$CABALVER" != "1.16" ]
+    then
+      echo 'jobs: $ncpus' >> $HOME/.cabal/config
+    fi
 
 install:
   - |
