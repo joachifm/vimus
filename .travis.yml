@@ -40,19 +40,18 @@ before_install:
 
 install:
   - |
-    set -e
+    set -ex
     travis_retry cabal update
     travis_retry cabal install c2hs
     cabal install --only-dependencies --enable-tests --enable-benchmarks --ghc-options=-O0 --reorder-goals --max-backjumps=-1 $CABALARGS
-    set +e
+    set +ex
 
 script:
   - |
-    set -e
-    cabal configure --force-reinstalls --enable-tests --enable-benchmarks --ghc-options=-O0 --reorder-goals --max-backjumps=-1 -v2 $CABALARGS
+    set -ex
+    cabal configure --enable-tests --enable-benchmarks --ghc-options=-O0 --reorder-goals --max-backjumps=-1 $CABALARGS
     cabal check
     cabal test
-    cabal sdist
-    cabal install --force-reinstalls dist/vimus-*.tar.gz
+    cabal sdist && cabal install --force-reinstalls dist/vimus-*.tar.gz
     vimus --version
-    set +e
+    set +ex
