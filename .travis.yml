@@ -49,7 +49,7 @@ install:
 script:
   - |
     set -ex
-    cabal configure --enable-tests --enable-benchmarks --ghc-options=-O0 --reorder-goals --max-backjumps=-1 $CABALARGS
+    cabal install --enable-tests --enable-benchmarks --ghc-options=-O0 --reorder-goals --max-backjumps=-1 $CABALARGS
     cabal check
     cabal test
     cabal sdist && cabal install --force-reinstalls dist/vimus-*.tar.gz
